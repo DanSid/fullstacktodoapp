@@ -1,9 +1,11 @@
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
+
+dotenv.config();
 // import initApp from "./src/modules/index.router.js";
-// import "dotenv/config";
 
 // const app = express();
 // const PORT = process.env.PORT || 6005;
@@ -23,13 +25,25 @@ const app = express();
 const PORT = 3000;
 
 // Use CORS Middleware
-app.use(cors());
+// CORS Configuration - Make sure this allows your frontend
+app.use(cors({
+  origin: ['http://localhost:3000','http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true
+}));
+// app.use(cors());
 
 // Middleware to parse JSON data
 app.use(express.json());
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Body:', req.body);
+  next();
+});
+
 // MongoDB Connection URI
-const MONGO_URI = 'mongodb://127.0.0.1:27017';
+const MONGO_URI = process.env.MONGODB_URI;
 //const MONGO_URI = 'mongodb://mongo-shared-dev:fikTpih4U2!@20.218.241.192:27017/?directConnection=true&appName=mongosh+1.8.2&authMechanism=DEFAULT';
 
 const dbname = 'todos';
@@ -59,6 +73,18 @@ const todoSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 const Todos = mongoose.model('Todos', todoSchema);
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    service: 'todo-backend'
+  });
+});
+
+// Your existing code...
+
 
 // Route: Fetch all users
 app.get('/api/users', async (req, res) => {
@@ -118,6 +144,29 @@ app.get('/api/gettodos', async (req, res) => {
     // return res.status(500).send({ message: "Internal server error" });
     console.log(error);
     return res.status(500).send({ message: error });
+  }
+});
+
+// Route to Delete todo 
+app.delete('/api/todos/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedTodo = await Todos.deleteOne({ _id: id });
+    
+    if (deletedTodo.deletedCount === 0) {
+      return res.status(404).json({ message: "No todo found with this id" });
+    }
+    
+    return res.status(200).json({ message: "Todo deleted successfully" });
+  } catch (error) {
+    console.log('Delete error:', error);
+    
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: "Invalid todo ID format" });
+    }
+    
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
 

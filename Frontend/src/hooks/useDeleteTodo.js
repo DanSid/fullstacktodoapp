@@ -8,8 +8,9 @@ const useDeleteTodo = (fetchTodos, page, limit) => {
   const deleteTodo = async (id) => {
     try {
       setIsLoading(true);
+      // Use relative URL for Docker environment
       const response = await fetch(
-        `https://fullstack-todolist-upnv.onrender.com/todos/${id}`,
+        `/api/todos/${id}`,
         {
           method: "DELETE",
           headers: {

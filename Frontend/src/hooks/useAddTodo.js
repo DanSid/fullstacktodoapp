@@ -11,8 +11,9 @@ const useAddTodos = (fetchTodos, page, limit, setNewTodo) => {
   const addTodo = async (todo) => {
     try {
       setIsLoading(true);
+      // Use relative URL for Docker environment
       const response = await fetch(
-        "http://localhost:3000/api/todos",
+        "/api/todos",
         {
           method: "POST",
           headers: {

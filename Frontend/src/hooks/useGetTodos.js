@@ -7,8 +7,9 @@ const useGetTodos = (setTodos, setNumOfPages, setPage) => {
   const fetchTodos = async (page, limit) => {
     setIsLoading(true);
     try {
+      // Use relative URL for Docker environment
       const response = await fetch(
-        `https://fullstack-todolist-upnv.onrender.com/todos?page=${page}&limit=${limit}`
+        `/api/todos?page=${page}&limit=${limit}`
       );
       const data = await response.json();
       setTodos(data.todos);

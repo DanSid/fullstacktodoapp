@@ -7,8 +7,9 @@ const useUpdateTodo = (setTodos) => {
   const updateTodo = async (todo) => {
     try {
       setIsLoading(true);
+      // Use relative URL for Docker environment
       const response = await fetch(
-        `https://fullstack-todolist-upnv.onrender.com/todos/${todo._id}`,
+        `/api/todos/${todo._id}`,
         {
           method: "PUT",
           headers: {
